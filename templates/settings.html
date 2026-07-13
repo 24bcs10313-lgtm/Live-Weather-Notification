@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ Alert Settings - Live Weather Notification</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>">
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <span>🌦️ Live Weather</span>
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-btn">Dashboard</a>
+                <a href="/settings" class="nav-btn active">Settings</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="card" style="max-width: 650px; margin: 0 auto;">
+            <h2 class="settings-section-title">⚙️ Alert & Notification Preferences</h2>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert-banner" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: #a7f3d0; margin-bottom: 1.5rem;">
+                            <span>✅</span>
+                            <div>{{ message }}</div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form action="/settings" method="POST">
+                <!-- 1. Enable Alerts Toggle -->
+                <div class="form-group">
+                    <label class="checkbox-container">
+                        <input 
+                            type="checkbox" 
+                            name="enable_notifications" 
+                            value="y" 
+                            {% if config.enable_notifications %}checked{% endif %}
+                        >
+                        <span>Enable Dashboard Alert Banners</span>
+                    </label>
+                    <div class="form-desc" style="margin-left: 1.95rem;">
+                        If checked, warning banners will be shown at the top of your dashboard when thresholds are exceeded.
+                    </div>
+                </div>
+
+                <div class="form-group-row">
+                    <!-- 2. Notification Interval (Simulated Check Cycle) -->
+                    <div style="flex: 1; min-width: 200px;">
+                        <label class="form-label" for="interval_minutes">Simulated Check Cycle:</label>
+                        <select name="interval_minutes" id="interval_minutes" class="input-styled" style="width: 100%;">
+                            <option value="5" {% if config.interval_minutes == 5 %}selected{% endif %}>5 Minutes</option>
+                            <option value="15" {% if config.interval_minutes == 15 %}selected{% endif %}>15 Minutes</option>
+                            <option value="30" {% if config.interval_minutes == 30 %}selected{% endif %}>30 Minutes</option>
+                            <option value="60" {% if config.interval_minutes == 60 %}selected{% endif %}>1 Hour</option>
+                            <option value="120" {% if config.interval_minutes == 120 %}selected{% endif %}>2 Hours</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Temperature Warning Parameters -->
+                <div class="form-group-row">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label class="form-label" for="temp_high_threshold">🔥 High Temperature Alert (°C)</label>
+                        <input 
+                            type="number" 
+                            step="0.1" 
+                            name="temp_high_threshold" 
+                            id="temp_high_threshold" 
+                            class="input-styled" 
+                            value="{{ config.temp_high_threshold }}" 
+                            style="width: 100%;" 
+                            required
+                        >
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label class="form-label" for="temp_low_threshold">❄️ Low Temperature Alert (°C)</label>
+                        <input 
+                            type="number" 
+                            step="0.1" 
+                            name="temp_low_threshold" 
+                            id="temp_low_threshold" 
+                            class="input-styled" 
+                            value="{{ config.temp_low_threshold }}" 
+                            style="width: 100%;" 
+                            required
+                        >
+                    </div>
+                </div>
+
+                <!-- 3. Rain Warning Toggle -->
+                <div class="form-group">
+                    <label class="checkbox-container">
+                        <input 
+                            type="checkbox" 
+                            name="rain_alert_enabled" 
+                            value="y" 
+                            {% if config.rain_alert_enabled %}checked{% endif %}
+                        >
+                        <span>🌧️ Alert if Rain, Snow or Storms are imminent</span>
+                    </label>
+                </div>
+
+                <!-- 4. Wind Alert Toggle and speed -->
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label class="checkbox-container" style="margin-bottom: 0.5rem;">
+                        <input 
+                            type="checkbox" 
+                            name="wind_alert_enabled" 
+                            value="y" 
+                            {% if config.wind_alert_enabled %}checked{% endif %}
+                        >
+                        <span>💨 Alert if Wind speed exceeds:</span>
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1.95rem;">
+                        <input 
+                            type="number" 
+                            step="1" 
+                            name="wind_threshold_kmh" 
+                            class="input-styled" 
+                            value="{{ config.wind_threshold_kmh }}" 
+                            style="max-width: 120px;"
+                        >
+                        <span style="color: var(--color-text-secondary); font-size: 0.95rem;">km/h</span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <a href="/" class="btn-styled btn-secondary" style="text-align: center; text-decoration: none; flex: 1;">Cancel</a>
+                    <button type="submit" class="btn-styled" style="flex: 1;">Save Preferences</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        <p>Live Weather Notification Web App &copy; 2026. Powered by Open-Meteo.</p>
+    </footer>
+
+</body>
+</html>

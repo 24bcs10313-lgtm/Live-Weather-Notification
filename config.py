@@ -17,21 +17,45 @@ DEFAULT_CONFIG = {
 }
 
 def load_config():
-    if not os.path.exists(CONFIG_FILE):
-        save_config(DEFAULT_CONFIG)
-        return DEFAULT_CONFIG.copy()
+    # Attempt to load from Flask session if inside a request context
     try:
-        with open(CONFIG_FILE, "r") as f:
-            config = json.load(f)
-            # Ensure all keys from DEFAULT_CONFIG exist (backward compatibility)
+        from flask import session, has_request_context
+        if has_request_context() and "config" in session:
+            cfg = session["config"]
+            # Fill missing keys for backward compatibility
             for k, v in DEFAULT_CONFIG.items():
-                if k not in config:
-                    config[k] = v
-            return config
+                if k not in cfg:
+                    cfg[k] = v
+            return cfg
     except Exception:
-        return DEFAULT_CONFIG.copy()
+        pass
+
+    # Fallback to loading local config.json file
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, "r") as f:
+                config = json.load(f)
+                for k, v in DEFAULT_CONFIG.items():
+                    if k not in config:
+                        config[k] = v
+                return config
+        except Exception:
+            pass
+            
+    return DEFAULT_CONFIG.copy()
 
 def save_config(config):
+    # Attempt to save to Flask session if inside a request context
+    try:
+        from flask import session, has_request_context
+        if has_request_context():
+            session["config"] = config
+            session.modified = True
+            return True
+    except Exception:
+        pass
+
+    # Fallback to local config.json (will fail on read-only environments like Vercel, but works locally)
     try:
         with open(CONFIG_FILE, "w") as f:
             json.dump(config, f, indent=4)

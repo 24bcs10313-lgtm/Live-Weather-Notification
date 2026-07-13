@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌦️ Live Weather Notification Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌦️</text></svg>">
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <span>🌦️ Live Weather</span>
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-btn active">Dashboard</a>
+                <a href="/settings" class="nav-btn">Settings</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Alerts Banner Section -->
+        <div class="alerts-container">
+            {% if alerts %}
+                {% for alert in alerts %}
+                    <div class="alert-banner">
+                        <span>⚠️</span>
+                        <div>{{ alert }}</div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Left Side: Weather Status -->
+            <section class="card">
+                {% if weather %}
+                    <div class="weather-hero">
+                        <div class="weather-emoji">{{ weather.emoji }}</div>
+                        <div class="weather-temp-details">
+                            <h2 class="weather-city">{{ city }}</h2>
+                            <div class="weather-temp">{{ weather.temp }}°C</div>
+                            <div class="weather-desc">{{ weather.desc }}</div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <span class="stat-label">Feels Like</span>
+                            <span class="stat-value">{{ weather.temp_feels }}°C</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Humidity</span>
+                            <span class="stat-value">{{ weather.humidity }}%</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Wind Speed</span>
+                            <span class="stat-value">{{ weather.wind_speed }} km/h</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Rain Probability</span>
+                            <span class="stat-value">{{ weather.rain_prob }}%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-banner" style="margin-top: 2rem; border-top: 1px solid var(--color-border); padding-top: 1rem;">
+                        <span>🕒</span>
+                        <span>Last updated: {{ last_updated }}</span>
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 3rem 0; color: var(--color-text-secondary);">
+                        <p style="font-size: 1.2rem; font-weight: 500; margin-bottom: 0.5rem;">Offline or Weather Data Unavailable</p>
+                        <p>Please check your internet connection or try searching for another city.</p>
+                    </div>
+                {% endif %}
+            </section>
+
+            <!-- Right Side: Change Location -->
+            <section class="card search-widget">
+                <h3>🔍 Change Location</h3>
+                <form class="search-form" action="/" method="GET">
+                    <input 
+                        type="text" 
+                        name="search_query" 
+                        class="input-styled" 
+                        placeholder="Search city (e.g. London, Mumbai)..." 
+                        value="{{ search_query or '' }}"
+                        required
+                    >
+                    <button type="submit" class="btn-styled">Search</button>
+                </form>
+
+                {% if search_results is not none %}
+                    <h4>Search Results:</h4>
+                    <div class="results-list" style="margin-top: 0.75rem;">
+                        {% if search_results %}
+                            {% for item in search_results %}
+                                <div class="result-item">
+                                    <div class="result-info">
+                                        <div class="result-name">{{ item.name }}</div>
+                                        <div class="result-admin">
+                                            {% if item.admin1 %}{{ item.admin1 }}, {% endif %}{{ item.country }}
+                                        </div>
+                                    </div>
+                                    <form action="/select" method="POST" style="margin: 0;">
+                                        <input type="hidden" name="name" value="{{ item.name }}">
+                                        <input type="hidden" name="lat" value="{{ item.lat }}">
+                                        <input type="hidden" name="lon" value="{{ item.lon }}">
+                                        <button type="submit" class="btn-styled btn-select">Select</button>
+                                    </form>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p style="color: var(--color-alert-text); padding: 1rem 0; font-size: 0.95rem;">
+                                No locations found. Try searching for a different city name.
+                            </p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>Live Weather Notification Web App &copy; 2026. Powered by Open-Meteo.</p>
+    </footer>
+
+</body>
+</html>
