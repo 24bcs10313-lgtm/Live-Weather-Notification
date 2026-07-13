@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {
     "city": "Delhi",
     "latitude": 28.65195,
@@ -10,17 +9,4 @@
     "rain_alert_enabled": true,
     "wind_alert_enabled": false,
     "wind_threshold_kmh": 40.0
-=======
-{
-    "city": "Delhi",
-    "latitude": 28.65195,
-    "longitude": 77.23149,
-    "interval_minutes": 30,
-    "enable_notifications": true,
-    "temp_high_threshold": 35.0,
-    "temp_low_threshold": 15.0,
-    "rain_alert_enabled": true,
-    "wind_alert_enabled": false,
-    "wind_threshold_kmh": 40.0
->>>>>>> b0a67e270fb13439c156a260e13b6ebe317dd4fc
 }

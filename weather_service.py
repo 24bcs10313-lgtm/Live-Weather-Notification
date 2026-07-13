@@ -1,6 +1,4 @@
-import urllib.request
-import urllib.parse
-import json
+import requests
 
 # WMO Weather Codes mapping to human-friendly description and emoji
 WMO_CODES = {
@@ -42,82 +40,86 @@ def get_weather_desc(code, is_day=1):
 
 def geocode_city(city_name):
     """
-    Search coordinates for a given city name.
-    Returns a list of dicts with keys: name, country, admin1, lat, lon.
+    Search coordinates for a given city name using requests.
     """
     if not city_name or len(city_name.strip()) < 2:
         return []
     
-    encoded_city = urllib.parse.quote(city_name.strip())
-    url = f"https://geocoding-api.open-meteo.com/v1/search?name={encoded_city}&count=5&language=en&format=json"
+    url = "https://geocoding-api.open-meteo.com/v1/search"
+    params = {
+        "name": city_name.strip(),
+        "count": 5,
+        "language": "en",
+        "format": "json"
+    }
     
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'WeatherNotificationApp/1.0'})
-        with urllib.request.urlopen(req, timeout=8) as response:
-            data = json.loads(response.read().decode())
-            results = data.get("results", [])
-            
-            parsed_results = []
-            for r in results:
-                parsed_results.append({
-                    "name": r.get("name"),
-                    "country": r.get("country", ""),
-                    "admin1": r.get("admin1", ""), # state/province
-                    "lat": r.get("latitude"),
-                    "lon": r.get("longitude")
-                })
-            return parsed_results
+        response = requests.get(url, params=params, timeout=8)
+        response.raise_for_status()
+        data = response.json()
+        results = data.get("results", [])
+        
+        parsed_results = []
+        for r in results:
+            parsed_results.append({
+                "name": r.get("name"),
+                "country": r.get("country", ""),
+                "admin1": r.get("admin1", ""), # state/province
+                "lat": r.get("latitude"),
+                "lon": r.get("longitude")
+            })
+        return parsed_results
     except Exception as e:
         print(f"Geocoding error: {e}")
         return []
 
 def fetch_weather(lat, lon):
     """
-    Fetch current weather and daily summary for the given coordinates.
+    Fetch current weather and daily summary for coordinates using requests.
     """
-    url = (
-        f"https://api.open-meteo.com/v1/forecast?"
-        f"latitude={lat}&longitude={lon}&"
-        f"current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,wind_speed_10m&"
-        f"daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&"
-        f"timezone=auto"
-    )
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": lat,
+        "longitude": lon,
+        "current": "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,wind_speed_10m",
+        "daily": "temperature_2m_max,temperature_2m_min,precipitation_probability_max",
+        "timezone": "auto"
+    }
     
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'WeatherNotificationApp/1.0'})
-        with urllib.request.urlopen(req, timeout=8) as response:
-            data = json.loads(response.read().decode())
-            
-            current = data.get("current", {})
-            daily = data.get("daily", {})
-            
-            weather_code = current.get("weather_code", 0)
-            is_day = current.get("is_day", 1)
-            desc, emoji = get_weather_desc(weather_code, is_day)
-            
-            # Extract daily max/min temps
-            temp_max = daily.get("temperature_2m_max", [None])[0]
-            temp_min = daily.get("temperature_2m_min", [None])[0]
-            rain_prob = daily.get("precipitation_probability_max", [0])[0]
-            
-            weather_info = {
-                "temp": current.get("temperature_2m"),
-                "temp_feels": current.get("apparent_temperature"),
-                "humidity": current.get("relative_humidity_2m"),
-                "wind_speed": current.get("wind_speed_10m"),
-                "precipitation": current.get("precipitation"),
-                "rain": current.get("rain"),
-                "showers": current.get("showers"),
-                "snowfall": current.get("snowfall"),
-                "weather_code": weather_code,
-                "is_day": is_day,
-                "desc": desc,
-                "emoji": emoji,
-                "temp_max": temp_max if temp_max is not None else current.get("temperature_2m"),
-                "temp_min": temp_min if temp_min is not None else current.get("temperature_2m"),
-                "rain_prob": rain_prob
-            }
-            return weather_info
+        response = requests.get(url, params=params, timeout=8)
+        response.raise_for_status()
+        data = response.json()
+        
+        current = data.get("current", {})
+        daily = data.get("daily", {})
+        
+        weather_code = current.get("weather_code", 0)
+        is_day = current.get("is_day", 1)
+        desc, emoji = get_weather_desc(weather_code, is_day)
+        
+        temp_max = daily.get("temperature_2m_max", [None])[0]
+        temp_min = daily.get("temperature_2m_min", [None])[0]
+        rain_prob = daily.get("precipitation_probability_max", [0])[0]
+        
+        weather_info = {
+            "temp": current.get("temperature_2m"),
+            "temp_feels": current.get("apparent_temperature"),
+            "humidity": current.get("relative_humidity_2m"),
+            "wind_speed": current.get("wind_speed_10m"),
+            "precipitation": current.get("precipitation"),
+            "rain": current.get("rain"),
+            "showers": current.get("showers"),
+            "snowfall": current.get("snowfall"),
+            "weather_code": weather_code,
+            "is_day": is_day,
+            "desc": desc,
+            "emoji": emoji,
+            "temp_max": temp_max if temp_max is not None else current.get("temperature_2m"),
+            "temp_min": temp_min if temp_min is not None else current.get("temperature_2m"),
+            "rain_prob": rain_prob
+        }
+        return weather_info
     except Exception as e:
         print(f"Weather fetch error: {e}")
         return None
