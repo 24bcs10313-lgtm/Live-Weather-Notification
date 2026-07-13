@@ -1,0 +1,12 @@
+{
+    "city": "Delhi",
+    "latitude": 28.65195,
+    "longitude": 77.23149,
+    "interval_minutes": 30,
+    "enable_notifications": true,
+    "temp_high_threshold": 35.0,
+    "temp_low_threshold": 15.0,
+    "rain_alert_enabled": true,
+    "wind_alert_enabled": false,
+    "wind_threshold_kmh": 40.0
+}
