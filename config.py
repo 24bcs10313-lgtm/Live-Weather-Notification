@@ -17,6 +17,7 @@ DEFAULT_CONFIG = {
 }
 
 def load_config():
+<<<<<<< HEAD
     # Attempt to load from Flask session if inside a request context
     try:
         from flask import session, has_request_context
@@ -56,6 +57,23 @@ def save_config(config):
         pass
 
     # Fallback to local config.json (will fail on read-only environments like Vercel, but works locally)
+=======
+    if not os.path.exists(CONFIG_FILE):
+        save_config(DEFAULT_CONFIG)
+        return DEFAULT_CONFIG.copy()
+    try:
+        with open(CONFIG_FILE, "r") as f:
+            config = json.load(f)
+            # Ensure all keys from DEFAULT_CONFIG exist (backward compatibility)
+            for k, v in DEFAULT_CONFIG.items():
+                if k not in config:
+                    config[k] = v
+            return config
+    except Exception:
+        return DEFAULT_CONFIG.copy()
+
+def save_config(config):
+>>>>>>> b0a67e270fb13439c156a260e13b6ebe317dd4fc
     try:
         with open(CONFIG_FILE, "w") as f:
             json.dump(config, f, indent=4)
