@@ -1,9 +1,1 @@
-<<<<<<< HEAD
 flask>=3.0.0
-=======
-customtkinter>=5.2.0
-requests>=2.31.0
-plyer>=2.1.0
-pystray>=0.19.5
-pillow>=10.0.0
->>>>>>> b0a67e270fb13439c156a260e13b6ebe317dd4fc
